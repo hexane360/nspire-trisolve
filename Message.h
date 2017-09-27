@@ -14,7 +14,7 @@ public:
 	void display(const std::string&);
 	void drawOn(SDL_Surface*) const;
 	bool contains(const Vector2f&) const;
-    bool displayed = false;
+	bool displayed = false;
 private:
 	std::string _msg;
 	Vector2u _msgPos;

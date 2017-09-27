@@ -26,7 +26,7 @@ int main() {
 	triangle.message("Instructions:");
 
 	bool open = true;
-    while (open) { //main draw loop
+	while (open) { //main draw loop
 		SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0)); //clear screen
 		triangle.drawOn(screen);
 		SDL_SetCursor(NULL); //triggers cursor redraw
@@ -69,7 +69,7 @@ int main() {
 			break;
 			}
 		}
-    }
+	}
 	SDL_FreeSurface(screen);
 	SDL_Quit();
 	return 0;

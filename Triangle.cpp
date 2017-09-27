@@ -22,7 +22,7 @@ Triangle::Triangle() {
    /       \
   /C       B\
   -----a-----
-  note: clockwise is + rotation
+  note: clockwise is + rotation (because +y is down)
 */
 
 void debugSolveState(double sideArray[3], double angleArray[3]) {
@@ -42,7 +42,7 @@ void Triangle::update() {
 	cout << "\nBeginning solve:\n";
 	if (_checkConstraints(side, angle, sideCount, angleCount)) return; //constrains as necessary, returns on error
 	if (_lawOfCosines(side, angle, sideCount, angleCount)) return;
-	
+
 	double sineLaw = 0;
 	double ambiguous = 0;
 	int solveIteration = 0;
@@ -91,32 +91,32 @@ void Triangle::update() {
 						message("The given values are impossible");
 						return;
 					}
-				  double sum = 0;
-				  for (int j = 0; j < 3; j++) {
-					  sum += angle[j];
-				  }
-				  
-				  if (sum - 2*angle[i] < 0) { //ambiguous case
-					  if (!ambiguous) { //first time here, try to solve other places first
-						  ambiguous = angle[i];
-						  cout << "Skipping ambiguious case angle[" << i << "]: " << angle[i] << " or " << 180 - angle[i] << endl;
-						  angle[i] = 0;
-					  } else { //we've determined the triangle is ambiguous, prompt user for input
-						  cout << "Confirmed ambiguious triangle\n";
-						  bool acute = 1 == show_msgbox_2b("Ambiguous SSA Triangle", "Entered triangle is ambiguous. Do you want the acute or obtuse solution?", "Acute", "Obtuse");
-						  if (acute) {
-							  cout << "Chose acute version";
-						  } else {
-						  	  cout << "Chose obtuse version";
-						  	  angle[i] = 180 - angle[i];
-						  }
-						  cout << ", angle[" << i << "]: " << angle[i] << endl;
-  						  angleCount++;
-					  }
-				  } else {
-					  angleCount++;
-					  cout << "angle[" << i << "]: " << angle[i] << endl;
-				  }
+					double sum = 0;
+					for (int j = 0; j < 3; j++) {
+						sum += angle[j];
+					}
+
+					if (sum - 2*angle[i] < 0) { //ambiguous case
+						if (!ambiguous) { //first time here, try to solve other places first
+							ambiguous = angle[i];
+							cout << "Skipping ambiguious case angle[" << i << "]: " << angle[i] << " or " << 180 - angle[i] << endl;
+							angle[i] = 0;
+						} else { //we've determined the triangle is ambiguous, prompt user for input
+							cout << "Confirmed ambiguious triangle\n";
+							bool acute = 1 == show_msgbox_2b("Ambiguous SSA Triangle", "Entered triangle is ambiguous. Do you want the acute or obtuse solution?", "Acute", "Obtuse");
+							if (acute) {
+								cout << "Chose acute version";
+							} else {
+								cout << "Chose obtuse version";
+								angle[i] = 180 - angle[i];
+							}
+							cout << ", angle[" << i << "]: " << angle[i] << endl;
+							angleCount++;
+						}
+					} else {
+						angleCount++;
+						cout << "angle[" << i << "]: " << angle[i] << endl;
+					}
 				}
 			}
 		}
@@ -230,11 +230,11 @@ bool Triangle::_lawOfCosines(double side[3], double angle[3], int &sideCount, in
 			return true;
 		}
 		for (int i = 0; i < 3; i++) {
-		  if (!angle[i]) {
-			angle[i] = TO_DEGS*acos((side[(i+1)%3]*side[(i+1)%3] + side[(i+2)%3]*side[(i+2)%3] - side[i]*side[i]) / (2*side[(i+1)%3]*side[(i+2)%3]));
-			angleCount++;
-			cout << "angle[" << i << "]: " << angle[i] << endl;
-		  }
+			if (!angle[i]) {
+				angle[i] = TO_DEGS*acos((side[(i+1)%3]*side[(i+1)%3] + side[(i+2)%3]*side[(i+2)%3] - side[i]*side[i]) / (2*side[(i+1)%3]*side[(i+2)%3]));
+				angleCount++;
+				cout << "angle[" << i << "]: " << angle[i] << endl;
+			}
 		}
 	}
 	return false;
@@ -255,30 +255,30 @@ void Triangle::_drawSolved(double side[3], double angle[3]) {
 		leftCornerOffset = true; //left corner offset by b, use right instead
 	}
 	double scale = 0.8 / max( //fill 80% of screen
-		triLength / static_cast<double>(WINDOW_WIDTH), //base of triangle
-		triHeight / static_cast<double>(WINDOW_HEIGHT) //height of triangle
-	);
+	                         triLength / static_cast<double>(WINDOW_WIDTH), //base of triangle
+	                         triHeight / static_cast<double>(WINDOW_HEIGHT) ); //height of triangle
+
 	for (int i = 0; i < 3; i++) {
 		//set all driven (solved for) dimensions
 		_sides[i].setValue(side[i]);
-        _angles[i].setValue(angle[i]);
+		_angles[i].setValue(angle[i]);
 		side[i] *= scale; //scale all our solved values
 	}
 	triHeight *= scale; //update length and height with scale
 	triLength *= scale;
 
 	double leftCornerX = (WINDOW_WIDTH - triLength)/2.0; //center bottom in x
-    if (leftCornerOffset) { //left corner inset in
-        leftCornerX += triLength - side[0]; //right corner - length = left corner
-    }
-    double bottomY = WINDOW_HEIGHT - (WINDOW_HEIGHT-triHeight)/2.0; //and in y
+	if (leftCornerOffset) { //left corner inset in
+		leftCornerX += triLength - side[0]; //right corner - length = left corner
+	}
+	double bottomY = WINDOW_HEIGHT - (WINDOW_HEIGHT-triHeight)/2.0; //and in y
 
 	_drawPos[2] = Vector2f(leftCornerX, bottomY); //bottom left corner
 	//A = C + components of b = C + <b*cos(C), -height>
 	_drawPos[0] = _drawPos[2] + Vector2f(side[1]*cos(angle[2]*TO_RADS), -triHeight);
 	//B directly right from C
 	_drawPos[1] = _drawPos[2] + Vector2f(side[0], 0);
-	
+
 	_drawAng[0] = 180 + angle[2]; //180 to parallel + corresponding angle of C
 	_drawAng[1] = 180 - angle[1]; //supplement of B
 	_drawAng[2] = 0.0;
@@ -361,8 +361,8 @@ void Triangle::clickAt(const Vector2f &pos) { //select one dimension and deselec
 
 void Triangle::drawOn(SDL_Surface *window) const { //fast draw loop
 	aatrigonColor(window, _drawPos[2].x, _drawPos[2].y,
-	                      _drawPos[1].x, _drawPos[1].y,
-	                      _drawPos[0].x, _drawPos[0].y, SHAPE_COLOR);
+	              _drawPos[1].x, _drawPos[1].y,
+	              _drawPos[0].x, _drawPos[0].y, SHAPE_COLOR);
 	for (int i = 0; i < 3; i++) {
 		//angles negated so positive is CCW
 		arcColor(window, _drawPos[i].x, _drawPos[i].y, 15,
@@ -416,9 +416,7 @@ void Triangle::cancelSelection() { //resets current selection to driven
 	update();
 }
 
-
 void Triangle::message(const string &s) {
 	//show_msgbox("Triangle solver", _msg.c_str()); //bullshit system messagebox
 	_messageBox.display(s);
 }
-

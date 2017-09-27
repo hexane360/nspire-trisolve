@@ -24,13 +24,13 @@ public:
 	void setValue(double); //called by Triangle to update with solved values
 	void setPos(const Vector2f&); //update shapes, one corner of line
 	void drawOn(SDL_Surface*) const; //called by draw loop
-	
+
 	void select(); //show cursor and wait for entry
 	void cancelSelection();
 	void makeDriven();		//reset value
 	void setOffsetDir(const OffsetDirection&);
 	void setSuffix(char);
-	
+
 	double getValue() const; //called by Triangle on d
 	//double distFrom(const Vector2f&) const;
 	bool contains(const Vector2f&) const; //point inside dimension?

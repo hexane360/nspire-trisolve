@@ -30,46 +30,45 @@
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-class Vector2
-{
+class Vector2 {
 public:
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Creates a Vector2(0, 0).
-    ///
-    ////////////////////////////////////////////////////////////
-    Vector2();
+	////////////////////////////////////////////////////////////
+	/// \brief Default constructor
+	///
+	/// Creates a Vector2(0, 0).
+	///
+	////////////////////////////////////////////////////////////
+	Vector2();
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the vector from its coordinates
-    ///
-    /// \param X X coordinate
-    /// \param Y Y coordinate
-    ///
-    ////////////////////////////////////////////////////////////
-    Vector2(T X, T Y);
+	////////////////////////////////////////////////////////////
+	/// \brief Construct the vector from its coordinates
+	///
+	/// \param X X coordinate
+	/// \param Y Y coordinate
+	///
+	////////////////////////////////////////////////////////////
+	Vector2(T X, T Y);
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the vector from another type of vector
-    ///
-    /// This constructor doesn't replace the copy constructor,
-    /// it's called only when U != T.
-    /// A call to this constructor will fail to compile if U
-    /// is not convertible to T.
-    ///
-    /// \param vector Vector to convert
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename U>
-    explicit Vector2(const Vector2<U>& vector);
+	////////////////////////////////////////////////////////////
+	/// \brief Construct the vector from another type of vector
+	///
+	/// This constructor doesn't replace the copy constructor,
+	/// it's called only when U != T.
+	/// A call to this constructor will fail to compile if U
+	/// is not convertible to T.
+	///
+	/// \param vector Vector to convert
+	///
+	////////////////////////////////////////////////////////////
+	template <typename U>
+	explicit Vector2(const Vector2<U>& vector);
 
-    ////////////////////////////////////////////////////////////
-    // Member data
-    ////////////////////////////////////////////////////////////
-    T x; ///< X coordinate of the vector
-    T y; ///< Y coordinate of the vector
+	////////////////////////////////////////////////////////////
+	// Member data
+	////////////////////////////////////////////////////////////
+	T x; ///< X coordinate of the vector
+	T y; ///< Y coordinate of the vector
 };
 
 ////////////////////////////////////////////////////////////
@@ -245,138 +244,121 @@ bool operator !=(const Vector2<T>& left, const Vector2<T>& right);
 
 template <typename T>
 inline Vector2<T>::Vector2() :
-x(0),
-y(0)
-{
-
-}
+	x(0),
+	y(0)
+{ }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
 inline Vector2<T>::Vector2(T X, T Y) :
-x(X),
-y(Y)
-{
-
-}
+	x(X),
+	y(Y)
+{ }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
 template <typename U>
 inline Vector2<T>::Vector2(const Vector2<U>& vector) :
-x(static_cast<T>(vector.x)),
-y(static_cast<T>(vector.y))
-{
+	x(static_cast<T>(vector.x)),
+	y(static_cast<T>(vector.y))
+{ }
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+inline Vector2<T> operator -(const Vector2<T>& right) {
+	return Vector2<T>(-right.x, -right.y);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline Vector2<T> operator -(const Vector2<T>& right)
-{
-    return Vector2<T>(-right.x, -right.y);
+inline Vector2<T>& operator +=(Vector2<T>& left, const Vector2<T>& right) {
+	left.x += right.x;
+	left.y += right.y;
+
+	return left;
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline Vector2<T>& operator +=(Vector2<T>& left, const Vector2<T>& right)
-{
-    left.x += right.x;
-    left.y += right.y;
+inline Vector2<T>& operator -=(Vector2<T>& left, const Vector2<T>& right) {
+	left.x -= right.x;
+	left.y -= right.y;
 
-    return left;
+	return left;
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline Vector2<T>& operator -=(Vector2<T>& left, const Vector2<T>& right)
-{
-    left.x -= right.x;
-    left.y -= right.y;
-
-    return left;
+inline Vector2<T> operator +(const Vector2<T>& left, const Vector2<T>& right) {
+	return Vector2<T>(left.x + right.x, left.y + right.y);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline Vector2<T> operator +(const Vector2<T>& left, const Vector2<T>& right)
-{
-    return Vector2<T>(left.x + right.x, left.y + right.y);
+inline Vector2<T> operator -(const Vector2<T>& left, const Vector2<T>& right) {
+	return Vector2<T>(left.x - right.x, left.y - right.y);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline Vector2<T> operator -(const Vector2<T>& left, const Vector2<T>& right)
-{
-    return Vector2<T>(left.x - right.x, left.y - right.y);
+inline Vector2<T> operator *(const Vector2<T>& left, T right) {
+	return Vector2<T>(left.x * right, left.y * right);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline Vector2<T> operator *(const Vector2<T>& left, T right)
-{
-    return Vector2<T>(left.x * right, left.y * right);
+inline Vector2<T> operator *(T left, const Vector2<T>& right) {
+	return Vector2<T>(right.x * left, right.y * left);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline Vector2<T> operator *(T left, const Vector2<T>& right)
-{
-    return Vector2<T>(right.x * left, right.y * left);
+inline Vector2<T>& operator *=(Vector2<T>& left, T right) {
+	left.x *= right;
+	left.y *= right;
+
+	return left;
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline Vector2<T>& operator *=(Vector2<T>& left, T right)
-{
-    left.x *= right;
-    left.y *= right;
-
-    return left;
+inline Vector2<T> operator /(const Vector2<T>& left, T right) {
+	return Vector2<T>(left.x / right, left.y / right);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline Vector2<T> operator /(const Vector2<T>& left, T right)
-{
-    return Vector2<T>(left.x / right, left.y / right);
+inline Vector2<T>& operator /=(Vector2<T>& left, T right) {
+	left.x /= right;
+	left.y /= right;
+
+	return left;
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline Vector2<T>& operator /=(Vector2<T>& left, T right)
-{
-    left.x /= right;
-    left.y /= right;
-
-    return left;
+inline bool operator ==(const Vector2<T>& left, const Vector2<T>& right) {
+	return (left.x == right.x) && (left.y == right.y);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline bool operator ==(const Vector2<T>& left, const Vector2<T>& right)
-{
-    return (left.x == right.x) && (left.y == right.y);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-inline bool operator !=(const Vector2<T>& left, const Vector2<T>& right)
-{
-    return (left.x != right.x) || (left.y != right.y);
+inline bool operator !=(const Vector2<T>& left, const Vector2<T>& right) {
+	return (left.x != right.x) || (left.y != right.y);
 }
 
 // Define the most common types
@@ -386,10 +368,10 @@ typedef Vector2<double>       Vector2f;
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::Vector2
+/// \class Vector2
 /// \ingroup system
 ///
-/// sf::Vector2 is a simple class that defines a mathematical
+/// Vector2 is a simple class that defines a mathematical
 /// vector with two coordinates (x and y). It can be used to
 /// represent anything that has two dimensions: a size, a point,
 /// a velocity, etc.
@@ -398,30 +380,30 @@ typedef Vector2<double>       Vector2f;
 /// can be any type that supports arithmetic operations (+, -, /, *)
 /// and comparisons (==, !=), for example int or float.
 ///
-/// You generally don't have to care about the templated form (sf::Vector2<T>),
+/// You generally don't have to care about the templated form (Vector2<T>),
 /// the most common specializations have special typedefs:
-/// \li sf::Vector2<float> is sf::Vector2f
-/// \li sf::Vector2<int> is sf::Vector2i
-/// \li sf::Vector2<unsigned int> is sf::Vector2u
+/// \li Vector2<float> is Vector2f
+/// \li Vector2<int> is Vector2i
+/// \li Vector2<unsigned int> is Vector2u
 ///
-/// The sf::Vector2 class has a small and simple interface, its x and y members
+/// The Vector2 class has a small and simple interface, its x and y members
 /// can be accessed directly (there are no accessors like setX(), getX()) and it
 /// contains no mathematical function like dot product, cross product, length, etc.
 ///
 /// Usage example:
 /// \code
-/// sf::Vector2f v1(16.5f, 24.f);
+/// Vector2f v1(16.5f, 24.f);
 /// v1.x = 18.2f;
 /// float y = v1.y;
 ///
-/// sf::Vector2f v2 = v1 * 5.f;
-/// sf::Vector2f v3;
+/// Vector2f v2 = v1 * 5.f;
+/// Vector2f v3;
 /// v3 = v1 + v2;
 ///
 /// bool different = (v2 != v3);
 /// \endcode
 ///
-/// Note: for 3-dimensional vectors, see sf::Vector3.
+/// Note: for 3-dimensional vectors, see Vector3.
 ///
 ////////////////////////////////////////////////////////////
 
