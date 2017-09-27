@@ -3,6 +3,9 @@ const int FONT_HEIGHT = 8;
 const int V_PADDING = 1;
 const int H_PADDING = 0;
 
+//Thief's 6x8 font
+//http://dwarffortresswiki.org/index.php/File:Font6x8.png
+
 const char fontdata[2048] = {
 	//char 0
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 

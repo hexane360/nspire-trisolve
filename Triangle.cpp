@@ -3,11 +3,15 @@ using namespace std;
 
 Triangle::Triangle() {
 	//cout << "Triangle::Triangle()\n";
+	for (int i = 0; i < 3; i++) {
+		_angles[i].setSuffix((char)248);
+		_sides[i].setSuffix('\'');
+	}
+	_sides[0].setOffsetDir(Dimension::OffsetDown);
+	_angles[0].setOffsetDir(Dimension::OffsetUp);
+	_angles[1].setOffsetDir(Dimension::OffsetDown);
+	_angles[2].setOffsetDir(Dimension::OffsetDown);
 	reset();
-	_sides[0].setOffsetDir(Text::OffsetDown);
-	_angles[0].setOffsetDir(Text::OffsetUp);
-	_angles[1].setOffsetDir(Text::OffsetDown);
-	_angles[2].setOffsetDir(Text::OffsetDown);
 }
 
 /*
@@ -247,9 +251,9 @@ void Triangle::_drawSolved(double side[3], double angle[3]) {
 		triHeight / static_cast<double>(WINDOW_HEIGHT) //height of triangle
 	);
 	for (int i = 0; i < 3; i++) {
-		_sides[i].setScale(scale); //scale lines as well as positions
+		//set all driven (solved for) dimensions
 		_sides[i].setValue(side[i]);
-		_angles[i].setValue(angle[i]);
+        _angles[i].setValue(angle[i]);
 		side[i] *= scale; //scale all our solved values
 	}
 	triHeight *= scale; //update length and height with scale
@@ -261,37 +265,38 @@ void Triangle::_drawSolved(double side[3], double angle[3]) {
     }
     double bottomY = WINDOW_HEIGHT - (WINDOW_HEIGHT-triHeight)/2.0; //and in y
 
-	Vector2f posC = Vector2f(leftCornerX, bottomY); //bottom left corner
-	//draw lines attached to posC
-	_sides[0].setDrawPos(posC, 0.0);
-	_sides[1].setDrawPos(posC, -angle[2]);
-
-	//posA = posC + components of b = posC + <b*cos(C), -height>
-	Vector2f posA = posC + Vector2f(side[1]*cos(angle[2]*TO_RADS), -triHeight);
-	_sides[2].setDrawPos(posA, angle[1]);
+	_drawPos[2] = Vector2f(leftCornerX, bottomY); //bottom left corner
+	//A = C + components of b = C + <b*cos(C), -height>
+	_drawPos[0] = _drawPos[2] + Vector2f(side[1]*cos(angle[2]*TO_RADS), -triHeight);
+	//B directly right from C
+	_drawPos[1] = _drawPos[2] + Vector2f(side[0], 0);
+	
+	_drawAng[0] = 180 + angle[2]; //180 to parallel + corresponding angle of C
+	_drawAng[1] = 180 - angle[1]; //supplement of B
+	_drawAng[2] = 0.0;
 
 	double insideGap = side[0]/2.0; //half sized similar triangle
-	double leftGap = (posC.x + posA.x)/2.0; //average of pos A and C
-	double rightGap = WINDOW_WIDTH - (posC.x + side[0] + posA.x)/2.0; //average of pos B and A
+	double leftGap = (_drawPos[2].x + _drawPos[0].x)/2.0; //average of A and C
+	double rightGap = WINDOW_WIDTH - (_drawPos[0].x + _drawPos[1].x)/2.0; //average of pos B and A
 	if (insideGap > leftGap || insideGap > rightGap) { //use inside of triangle, it's better
-		_sides[1].setOffsetDir((leftGap < rightGap) ? Text::OffsetRight : Text::OffsetLeft); //if my gap is smaller, take inside, else outside
-		_sides[2].setOffsetDir((leftGap < rightGap) ? Text::OffsetRight : Text::OffsetLeft); //if my gap is bigger, take outside, else inside
-	} else { //outsides better anyway
-		_sides[1].setOffsetDir(Text::OffsetLeft);
-		_sides[2].setOffsetDir(Text::OffsetRight);
+		if (leftGap < rightGap) {
+			_sides[1].setOffsetDir(Dimension::OffsetRight); //left side take inside
+			_sides[2].setOffsetDir(Dimension::OffsetRight);
+		} else {
+			_sides[1].setOffsetDir(Dimension::OffsetLeft);
+			_sides[2].setOffsetDir(Dimension::OffsetLeft); //right side take inside
+		}
+	} else {
+		_sides[1].setOffsetDir(Dimension::OffsetLeft);
+		_sides[2].setOffsetDir(Dimension::OffsetRight);
 	}
-
-    /*double bisectAngles[3];
-	bisectAngles[0] = 180 - angle[2] - angle[0]/2.0; //rotate to lie along b, then to straddle A
-	bisectAngles[1] = 180 + angle[1]/2.0; //halfway between both sides of B
-	bisectAngles[2] = -angle[2]/2.0; //halfway between both sides of C
-
-	_angles[0].flipText(bisectAngles[0] > 90); //draw text right side up
-	*/
-
-	_angles[0].setDrawPos(posA, -angle[1] - angle[0]); //top angle
-	_angles[1].setDrawPos(posC + Vector2f(side[0],0.0), 180 - angle[1]); //pos B 
-	_angles[2].setDrawPos(posC, 0.0); //bottom left angle
+	_angles[0].setPos(_drawPos[0]);
+	_angles[1].setPos(_drawPos[1]);
+	_angles[2].setPos(_drawPos[2]);
+	//draw side dims at midpoints
+	_sides[0].setPos((_drawPos[1] + _drawPos[2])/2.0);
+	_sides[1].setPos((_drawPos[0] + _drawPos[2])/2.0);
+	_sides[2].setPos((_drawPos[0] + _drawPos[1])/2.0);
 }
 
 void Triangle::sendChar(char c) {
@@ -347,7 +352,15 @@ void Triangle::clickAt(const Vector2f &pos) { //select one dimension and deselec
 }
 
 void Triangle::drawOn(SDL_Surface *window) const { //fast draw loop
-	//cout << "Triangle::drawOn()\n";
+	aatrigonColor(window, _drawPos[2].x, _drawPos[2].y,
+	                      _drawPos[1].x, _drawPos[1].y,
+	                      _drawPos[0].x, _drawPos[0].y, SHAPE_COLOR);
+	//hlineColor(window, _drawPos[2].x, _drawPos[1].x, _drawPos[2].y, SHAPE_COLOR);
+	for (int i = 0; i < 3; i++) {
+		//angles negated so positive is CCW
+		arcColor(window, _drawPos[i].x, _drawPos[i].y, 15,
+		         -_drawAng[i] - _angles[i].getValue(), -_drawAng[i], SHAPE_COLOR);
+	}
 	for (int i = 0; i < 3; i++) {
 		_angles[i].drawOn(window);
 		_sides[i].drawOn(window);

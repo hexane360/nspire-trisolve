@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <SDL/SDL.h>
 
-#include "Shapes.h"
+#include "Dimension.h"
 #include "constants.h"
 #include "Message.h"
 
@@ -22,8 +22,10 @@ public:
 	void update();
 	void message(const std::string&);
 private:
-	Angle _angles[3];
-	Side _sides[3];
+	Dimension _angles[3];
+	Dimension _sides[3];
+	Vector2f _drawPos[3];
+	double _drawAng[3];
 	Message _messageBox;
 	std::string _msg;
 	bool _ignoreEvent = false;

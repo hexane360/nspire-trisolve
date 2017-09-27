@@ -3,6 +3,9 @@ const int FONT_HEIGHT = 14;
 const int V_PADDING = 1;
 const int H_PADDING = 0;
 
+//IBM MDA 8x14 font
+//http://dwarffortresswiki.org/index.php/File:MDA8x14.png
+
 const char fontdata[3584] = {
 	//char 0
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
