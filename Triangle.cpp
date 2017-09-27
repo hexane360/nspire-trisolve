@@ -101,9 +101,17 @@ void Triangle::update() {
 						  ambiguous = angle[i];
 						  cout << "Skipping ambiguious case angle[" << i << "]: " << angle[i] << " or " << 180 - angle[i] << endl;
 						  angle[i] = 0;
-					  } else { //we've determined the triangle is ambiguous, just choose one possibility and go with it
-						  angleCount++;
-						  cout << "Confirmed ambiguious triangle. Choosing angle[" << i << "]: " << angle[i] << " vs " << 180 - angle[i] << endl;
+					  } else { //we've determined the triangle is ambiguous, prompt user for input
+						  cout << "Confirmed ambiguious triangle\n";
+						  bool acute = 1 == show_msgbox_2b("Ambiguous SSA Triangle", "Entered triangle is ambiguous. Do you want the acute or obtuse solution?", "Acute", "Obtuse");
+						  if (acute) {
+							  cout << "Chose acute version";
+						  } else {
+						  	  cout << "Chose obtuse version";
+						  	  angle[i] = 180 - angle[i];
+						  }
+						  cout << ", angle[" << i << "]: " << angle[i] << endl;
+  						  angleCount++;
 					  }
 				  } else {
 					  angleCount++;
@@ -355,7 +363,6 @@ void Triangle::drawOn(SDL_Surface *window) const { //fast draw loop
 	aatrigonColor(window, _drawPos[2].x, _drawPos[2].y,
 	                      _drawPos[1].x, _drawPos[1].y,
 	                      _drawPos[0].x, _drawPos[0].y, SHAPE_COLOR);
-	//hlineColor(window, _drawPos[2].x, _drawPos[1].x, _drawPos[2].y, SHAPE_COLOR);
 	for (int i = 0; i < 3; i++) {
 		//angles negated so positive is CCW
 		arcColor(window, _drawPos[i].x, _drawPos[i].y, 15,
