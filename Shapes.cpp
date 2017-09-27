@@ -86,14 +86,14 @@ void Side::_update(const string &override) {
     _text.setText(ss.str());
 }
 Vector2f Side::midpoint() const { //returns midpoint of line
-	return (_pos + _endPos)/static_cast<float>(2.0);
+	return (_pos + _endPos)/2.0;
 }
 
 void Side::setDrawPos(const Vector2f& newPos, double newAng) { //where to draw side on screen
 	//cout << "Side::setDrawPos((" << newPos.x << "," << newPos.y << "), " << newAng << ")\n";
 	_pos = newPos;
 	_drawAng = newAng;
-	_endPos = newPos + static_cast<float>(_length*_scale)*Vector2f(cos(_drawAng*TO_RADS),sin(_drawAng*TO_RADS));
+	_endPos = newPos + (_length*_scale)*Vector2f(cos(_drawAng*TO_RADS),sin(_drawAng*TO_RADS));
 	//cout << "_endPos: (" << _endPos.x << "," << _endPos.y << ")\n";
     _text.setDrawPos((Vector2u)midpoint()); //gets halfway point of line
 }

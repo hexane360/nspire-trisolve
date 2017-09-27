@@ -17,7 +17,6 @@ int main() {
 	gfxPrimitivesSetFont(fontdata, FONT_WIDTH, FONT_HEIGHT);
 	//SDL_Cursor *cursor = SDL_GetCursor();
 	SDL_ShowCursor(1);
-
 	SDL_Event event;
 	SDL_EventState(SDL_KEYDOWN, SDL_IGNORE);
 	SDL_EventState(SDL_MOUSEBUTTONDOWN, SDL_IGNORE);
