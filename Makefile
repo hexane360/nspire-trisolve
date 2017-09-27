@@ -1,47 +1,38 @@
 DEBUG = FALSE
-EXE = triangle
 
-GCC = nspire-gcc
-AS  = nspire-as
 GXX = nspire-g++
 LD  = nspire-ld
 GENZEHN = genzehn
 
 GXXFLAGS = --std=c++11 -Wall -W -marm
-LDFLAGS = #-Wl,--nspireio
+LDFLAGS =
 ZEHNFLAGS = --name "$(EXE)" --ndless-min 45 --touchpad-support 1 --clickpad-support 0 --color-support 1 --240x320-support 0
 
 ifeq ($(DEBUG),FALSE)
-	GCCFLAGS += -Os
+	GXXFLAGS += -Os
 else
-	GCCFLAGS += -O0 -g
+	GXXFLAGS += -O0 -g
 endif
 
-OBJS += $(patsubst %.cpp, %.o, $(shell find . -name \*.cpp))
-DISTDIR = .
-vpath %.tns $(DISTDIR)
-vpath %.elf $(DISTDIR)
+all: triangle.tns
 
-all: $(EXE).tns
+main.o : main.cpp Triangle.o constants.h font.h
+	$(GXX) $(GXXFLAGS) -Wno-switch -c main.cpp
+Triangle.o : Triangle.cpp Triangle.h Dimension.h Message.h constants.h
+	$(GXX) $(GXXFLAGS) -c Triangle.cpp
+Message.o : Message.cpp Message.h Vector2.h constants.h font.h
+	$(GXX) $(GXXFLAGS) -c Message.cpp
+Dimension.o : Dimension.cpp Dimension.h Vector2.h constants.h font.h
+	$(GXX) $(GXXFLAGS) -c Dimension.cpp
+font.o : font.cpp font.h Vector2.h
+	$(GXX) $(GXXFLAGS) -c font.cpp
+font.h : font_*.h;
 
-%.o: %.c
-	$(GCC) $(GCCFLAGS) -c $<
+triangle.elf: main.o Triangle.o Dimension.o Message.o font.o
+	$(LD) $^ -o $@ $(LDFLAGS)
 
-%.o: %.cpp %.h
-	$(GXX) $(GCCFLAGS) -c $<
-
-%.o: %.cpp
-	$(GXX) $(GCCFLAGS) -c $<
-
-%.o: %.S
-	$(AS) -c $<
-
-$(EXE).elf: $(OBJS)
-	mkdir -p $(DISTDIR)
-	$(LD) $^ -o $(DISTDIR)/$@ $(LDFLAGS)
-
-$(EXE).tns: $(EXE).elf
-	$(GENZEHN) --input $(DISTDIR)/$^ --output $(DISTDIR)/$@ $(ZEHNFLAGS)
+triangle.tns: triangle.elf
+	$(GENZEHN) --input $^ --output $@ $(ZEHNFLAGS)
 
 clean:
-	rm -f *.o $(DISTDIR)/$(EXE).tns $(DISTDIR)/$(EXE).elf
+	rm -f *.o triangle.tns triangle.elf

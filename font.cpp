@@ -4,7 +4,7 @@ using namespace std;
 Vector2u textSize(const string &s) {
 	Vector2u size(0, FONT_HEIGHT);
 	unsigned int rowWidth = 0;
-	for (int i = 0; i < s.length(); i++) {
+	for (size_t i = 0; i < s.length(); i++) {
 		if (s[i] == '\n') {
 			size.y += V_PADDING + FONT_HEIGHT;
 			if (rowWidth > size.x) size.x = rowWidth;
@@ -20,7 +20,7 @@ Vector2u textSize(const string &s) {
 
 void drawString(SDL_Surface* surface, const Vector2u &pos, const string &s, Uint32 color) {
 	Vector2u drawPos = pos;
-	for (int i = 0; i < s.length(); i++) {
+	for (size_t i = 0; i < s.length(); i++) {
 		if (s[i] == '\n') {
 			drawPos.x = pos.x;
 			drawPos.y += FONT_HEIGHT + V_PADDING;
