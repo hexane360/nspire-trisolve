@@ -22,3 +22,4 @@ static const Uint32 DEFAULT_COLOR = COLOR(0, 153, 255);   //blue, for unset dime
 static const Uint32 SET_COLOR = COLOR(255, 51, 51);       //red, for set dimension
 static const Uint32 SELECTED_COLOR = COLOR(255, 255, 51); //yellow, for dimensions mid-entry
 static const Uint32 SHAPE_COLOR = COLOR(255, 255, 255);   //white, for everything else
+static const Uint32 AMBIG_COLOR = COLOR(255, 255, 51);    //yellow, for ambiguous triangle entry

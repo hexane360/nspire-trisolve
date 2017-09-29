@@ -16,7 +16,7 @@ endif
 
 all: triangle.tns
 
-main.o : main.cpp Triangle.o constants.h font.h
+main.o : main.cpp Triangle.h constants.h font.h
 	$(GXX) $(GXXFLAGS) -Wno-switch -c main.cpp
 Triangle.o : Triangle.cpp Triangle.h Dimension.h Message.h constants.h
 	$(GXX) $(GXXFLAGS) -c Triangle.cpp

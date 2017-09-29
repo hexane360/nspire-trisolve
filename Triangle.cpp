@@ -1,6 +1,8 @@
 #include "Triangle.h"
 using namespace std;
 
+#define STATE(s) (_state == State::s)
+
 Triangle::Triangle() {
 	//cout << "Triangle::Triangle()\n";
 	for (int i = 0; i < 3; i++) {
@@ -96,22 +98,34 @@ void Triangle::update() {
 						sum += angle[j];
 					}
 
-					if (sum - 2*angle[i] < 0) { //ambiguous case
+					if (2*angle[i] - sum > 0) { //ambiguous case
 						if (!ambiguous) { //first time here, try to solve other places first
 							ambiguous = angle[i];
 							cout << "Skipping ambiguious case angle[" << i << "]: " << angle[i] << " or " << 180 - angle[i] << endl;
 							angle[i] = 0;
-						} else { //we've determined the triangle is ambiguous, prompt user for input
-							cout << "Confirmed ambiguious triangle\n";
-							bool acute = 1 == show_msgbox_2b("Ambiguous SSA Triangle", "Entered triangle is ambiguous. Do you want the acute or obtuse solution?", "Acute", "Obtuse");
-							if (acute) {
-								cout << "Chose acute version";
-							} else {
-								cout << "Chose obtuse version";
+						} else if (STATE(RESOLVED)) { //we've resolved this ambiguity, apply the user's choice
+							cout << "Confirmed ambiguous triangle. Choosing " << (_ambiguous.choice ? "obtuse" : "acute") << " solution\n";
+							if (_ambiguous.choice)
 								angle[i] = 180 - angle[i];
-							}
-							cout << ", angle[" << i << "]: " << angle[i] << endl;
+							cout << "angle[" << i << "]: " << angle[i] << endl;
 							angleCount++;
+						} else { //we've determined the triangle is ambiguous, choose acute (larger) version for now
+							cout << "Confirmed ambiguious triangle\n";
+							angleCount++;
+							_state = State::AMBIGUOUS;
+
+							_ambiguous.angleIndex = i;
+							//calculate alternate dimensions
+							for (int j = 0; j < 3; j++) {
+								if (side[j] == 0) { //this side is ambiguous
+									_ambiguous.sideIndex = j;
+									double oppositeAngle = 2*angle[i] - sum;
+									cout << "Second alternate angle: " << oppositeAngle << endl;
+									_ambiguous.side = sin(oppositeAngle*TO_RADS)*sineLaw;
+									cout << "Alternate side[" << j << "]: " << _ambiguous.side << endl;
+									break;
+								}
+							}
 						}
 					} else {
 						angleCount++;
@@ -127,7 +141,7 @@ void Triangle::update() {
 
 bool Triangle::_checkConstraints(double side[3], double angle[3], int &sideCount, int &angleCount) {
 	double maxSide = 0;
-	for(int i=0; i<3; i++){
+	for (int i = 0; i < 3; i++) {
 		angle[i] = _angles[i].isDriving() ? _angles[i].getValue() : 0;
 		if (angle[i]) {
 			cout << "angle[" << i << "] given as " << angle[i] << endl;
@@ -254,9 +268,11 @@ void Triangle::_drawSolved(double side[3], double angle[3]) {
 		triLength += -side[1]*cos(angle[2]*TO_RADS); //side b sticks past base
 		leftCornerOffset = true; //left corner offset by b, use right instead
 	}
-	double scale = 0.8 / max( //fill 80% of screen
-	                         triLength / static_cast<double>(WINDOW_WIDTH), //base of triangle
-	                         triHeight / static_cast<double>(WINDOW_HEIGHT) ); //height of triangle
+
+	double xFactor = triLength / static_cast<double>(WINDOW_WIDTH);
+	//if ambiguous, leave top 10% of window for message
+	double yFactor = triHeight / static_cast<double>(WINDOW_HEIGHT) / (STATE(AMBIGUOUS) ? 0.9 : 1.0);
+	double scale = 0.8 / max(xFactor, yFactor); //fill 80% of screen
 
 	for (int i = 0; i < 3; i++) {
 		//set all driven (solved for) dimensions
@@ -266,18 +282,30 @@ void Triangle::_drawSolved(double side[3], double angle[3]) {
 	}
 	triHeight *= scale; //update length and height with scale
 	triLength *= scale;
+	if (STATE(AMBIGUOUS)) {
+		_ambiguous.side *= scale;
+	}
 
 	double leftCornerX = (WINDOW_WIDTH - triLength)/2.0; //center bottom in x
 	if (leftCornerOffset) { //left corner inset in
 		leftCornerX += triLength - side[0]; //right corner - length = left corner
 	}
-	double bottomY = WINDOW_HEIGHT - (WINDOW_HEIGHT-triHeight)/2.0; //and in y
+	double bottomY = WINDOW_HEIGHT - ((STATE(AMBIGUOUS) ? 0.9 : 1.0)*WINDOW_HEIGHT-triHeight)/2.0; //and in y
 
 	_drawPos[2] = Vector2f(leftCornerX, bottomY); //bottom left corner
 	//A = C + components of b = C + <b*cos(C), -height>
 	_drawPos[0] = _drawPos[2] + Vector2f(side[1]*cos(angle[2]*TO_RADS), -triHeight);
 	//B directly right from C
 	_drawPos[1] = _drawPos[2] + Vector2f(side[0], 0);
+
+	if (STATE(AMBIGUOUS)) { //calculate alternate side position
+		//index of non-ambiguous angle adjacent ambiguous side
+		size_t thirdSide = 3 - _ambiguous.sideIndex - _ambiguous.angleIndex;
+		//unit vector of ambiguous side
+		Vector2f ambigSideDir = (_drawPos[_ambiguous.angleIndex] - _drawPos[thirdSide]) / side[_ambiguous.sideIndex];
+		//project alternate side onto vector
+		_ambiguous.pos = _drawPos[thirdSide] + _ambiguous.side * ambigSideDir;
+	}
 
 	_drawAng[0] = 180 + angle[2]; //180 to parallel + corresponding angle of C
 	_drawAng[1] = 180 - angle[1]; //supplement of B
@@ -298,64 +326,58 @@ void Triangle::_drawSolved(double side[3], double angle[3]) {
 		_sides[1].setOffsetDir(Dimension::OffsetLeft);
 		_sides[2].setOffsetDir(Dimension::OffsetRight);
 	}
-	_angles[0].setPos(_drawPos[0]);
-	_angles[1].setPos(_drawPos[1]);
-	_angles[2].setPos(_drawPos[2]);
-	//draw side dims at midpoints
-	_sides[0].setPos((_drawPos[1] + _drawPos[2])/2.0);
-	_sides[1].setPos((_drawPos[0] + _drawPos[2])/2.0);
-	_sides[2].setPos((_drawPos[0] + _drawPos[1])/2.0);
+	for (int i = 0; i < 3; i++) {
+		_angles[i].setPos(_drawPos[i]);
+		_sides[i].setPos((_drawPos[(i+1)%3] + _drawPos[(i+2)%3])/2.0); //draw side dims at midpoints
+	}
 }
 
 void Triangle::sendChar(char c) {
-	if (_ignoreEvent) {
-		_ignoreEvent = false;
-		return;
-	}
-	if (_messageBox.displayed) { //cancel messagebox if open
+	if (STATE(MESSAGE)) {
+		_state = State::DEFAULT;
 		_messageBox.displayed = false;
-		return;
-	}
-
-	bool selected = false;
-	for (int i = 0; i < 3; i++) {
-		if (_sides[i].selected()) {
-			_sides[i].sendChar(c);
-			selected = true;
-			break;
+	} else if (!STATE(AMBIGUOUS)) {
+		bool selected = false;
+		for (int i = 0; i < 3; i++) {
+			if (_sides[i].selected()) {
+				_sides[i].sendChar(c);
+				selected = true;
+				break;
+			}
+			if (_angles[i].selected()) {
+				_angles[i].sendChar(c);
+				selected = true;
+				break;
+			}
 		}
-		if (_angles[i].selected()) {
-			_angles[i].sendChar(c);
-			selected = true;
-			break;
+		if (c == '\n' && selected) { //values have changed, recalculate
+			_state = State::DEFAULT;
+			update();
 		}
 	}
-	if (c == '\n' && selected) //values have changed, recalculate
-		update();
 }
 
 void Triangle::clickAt(const Vector2f &pos) { //select one dimension and deselect all others
-	if (_ignoreEvent) {
-		_ignoreEvent = false;
-		return;
-	}
-	if (_messageBox.displayed) {
-		if (_messageBox.contains(pos)) //clicked inside box, exit screen
+	if (STATE(MESSAGE)) {
+		if (_messageBox.contains(pos)) {
+			_state = State::DEFAULT;
 			_messageBox.displayed = false;
-		return;
-	}
-	bool selectedOne = false;
-	for (int i = 0; i < 3; i++) {
-		if (!selectedOne && _sides[i].contains(pos)) {
-			_sides[i].select();
-			selectedOne = true;
-		} else
-			_sides[i].cancelSelection(); //deselect if selected
-		if (!selectedOne && _angles[i].contains(pos)) {
-			_angles[i].select();
-			selectedOne = true;
-		} else
-			_angles[i].cancelSelection(); //deselect
+		}
+	} else if (!STATE(AMBIGUOUS)) {
+		for (int i = 0; i < 3; i++) {
+			_angles[i].cancelSelection();
+			_sides[i].cancelSelection();
+		}
+		for (int i = 0; i < 3; i++) {
+			if (_sides[i].contains(pos)) {
+				_sides[i].select();
+				break;
+			}
+			if (_angles[i].contains(pos)) {
+				_angles[i].select();
+				break;
+			}
+		}
 	}
 }
 
@@ -372,13 +394,34 @@ void Triangle::drawOn(SDL_Surface *window) const { //fast draw loop
 		_angles[i].drawOn(window);
 		_sides[i].drawOn(window);
 	}
-	if (_messageBox.displayed)
+	if (STATE(AMBIGUOUS)) {
+		size_t thirdPoint = 3 - _ambiguous.sideIndex - _ambiguous.angleIndex;
+		aatrigonColor(window, _ambiguous.pos.x, _ambiguous.pos.y,
+		              _drawPos[thirdPoint].x, _drawPos[thirdPoint].y,
+		              _drawPos[_ambiguous.sideIndex].x, _drawPos[_ambiguous.sideIndex].y, AMBIG_COLOR);
+		rectangleColor(window, 0, 7, WINDOW_WIDTH, 8+FONT_HEIGHT+1, BLACK);
+		Vector2u textPt = Vector2u((WINDOW_WIDTH - 37*FONT_WIDTH)/2, 8);
+		drawString(window, textPt, "Use acute (a) or            solution?", SHAPE_COLOR);
+		drawString(window, textPt + Vector2u(17*FONT_WIDTH,0), "obtuse (o)", AMBIG_COLOR);
+	} else if (STATE(MESSAGE))
 		_messageBox.drawOn(window);
 }
 
-void Triangle::clear() { //clears constraints
-	if (_messageBox.displayed)
+void Triangle::chooseSolution(bool choice) {
+	if (STATE(MESSAGE)) {
 		_messageBox.displayed = false;
+		_state = State::DEFAULT;
+	} else if (STATE(AMBIGUOUS)) {
+		_ambiguous.choice = choice;
+		_state = State::RESOLVED;
+		update();
+	}
+}
+
+void Triangle::clear() { //clears constraints
+	if (STATE(MESSAGE))
+		_messageBox.displayed = false;
+	_state = State::DEFAULT;
 	for (int i = 0; i < 3; i++) {
 		_sides[i].makeDriven();
 		_sides[i].cancelSelection();
@@ -389,20 +432,26 @@ void Triangle::clear() { //clears constraints
 }
 
 void Triangle::reset() { //resets all values to default
-	if (_messageBox.displayed)
+	if (STATE(MESSAGE))
 		_messageBox.displayed = false;
+	_state = State::DEFAULT;
 	for (int i = 0; i < 3; i++) {
 		_sides[i].makeDriven();
+		_sides[i].cancelSelection();
 		_sides[i].setValue(400);
 		_angles[i].makeDriven();
+		_angles[i].cancelSelection();
 		_angles[i].setValue(60);
 	}
 	update();
 }
 
 void Triangle::cancelSelection() { //resets current selection to driven
-	if (_messageBox.displayed)
+	if (STATE(MESSAGE)) {
 		_messageBox.displayed = false;
+		return;
+	}
+	_state = State::DEFAULT;
 	for (int i = 0; i < 3; i++) {
 		if (_sides[i].selected()) {
 			_sides[i].cancelSelection();
@@ -417,6 +466,6 @@ void Triangle::cancelSelection() { //resets current selection to driven
 }
 
 void Triangle::message(const string &s) {
-	//show_msgbox("Triangle solver", _msg.c_str()); //bullshit system messagebox
+	_state = State::MESSAGE;
 	_messageBox.display(s);
 }

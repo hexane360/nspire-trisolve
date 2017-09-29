@@ -16,7 +16,9 @@ int main() {
 	SDL_Surface *screen = SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, 16, SDL_SWSURFACE);
 	gfxPrimitivesSetFont(fontdata, FONT_WIDTH, FONT_HEIGHT);
 	//SDL_Cursor *cursor = SDL_GetCursor();
+	SDL_WarpMouse(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
 	SDL_ShowCursor(1);
+
 	SDL_Event event;
 	SDL_EventState(SDL_KEYDOWN, SDL_IGNORE);
 	SDL_EventState(SDL_MOUSEBUTTONDOWN, SDL_IGNORE);
@@ -54,6 +56,8 @@ int main() {
 				case SDLK_q: open = false; break; //quit
 				case SDLK_r: triangle.reset(); break; //resets triangle to default state
 				case SDLK_c: triangle.clear(); break; //clears set dimensions
+				case SDLK_a: triangle.chooseSolution(false); break;
+				case SDLK_o: triangle.chooseSolution(true); break;
 				case SDLK_BACKSPACE:
 					if (event.key.keysym.mod & KMOD_CTRL)
 						triangle.clear();
