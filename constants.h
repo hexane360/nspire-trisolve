@@ -1,6 +1,4 @@
 #pragma once
-#include "SDL/SDL_config_tinspire.h"
-#include "SDL/SDL_video.h"
 
 static const int WINDOW_WIDTH = 320;
 static const int WINDOW_HEIGHT = 240;

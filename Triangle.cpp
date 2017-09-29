@@ -399,7 +399,6 @@ void Triangle::drawOn(SDL_Surface *window) const { //fast draw loop
 		aatrigonColor(window, _ambiguous.pos.x, _ambiguous.pos.y,
 		              _drawPos[thirdPoint].x, _drawPos[thirdPoint].y,
 		              _drawPos[_ambiguous.sideIndex].x, _drawPos[_ambiguous.sideIndex].y, AMBIG_COLOR);
-		rectangleColor(window, 0, 7, WINDOW_WIDTH, 8+FONT_HEIGHT+1, BLACK);
 		Vector2u textPt = Vector2u((WINDOW_WIDTH - 37*FONT_WIDTH)/2, 8);
 		drawString(window, textPt, "Use acute (a) or            solution?", SHAPE_COLOR);
 		drawString(window, textPt + Vector2u(17*FONT_WIDTH,0), "obtuse (o)", AMBIG_COLOR);

@@ -6,7 +6,7 @@ GENZEHN = genzehn
 
 GXXFLAGS = --std=c++11 -Wall -W -marm
 LDFLAGS =
-ZEHNFLAGS = --name "$(EXE)" --ndless-min 45 --touchpad-support 1 --clickpad-support 0 --color-support 1 --240x320-support 0
+ZEHNFLAGS = --name "$(EXE)" --author "hexane360" --ndless-min 45 --touchpad-support true --clickpad-support false
 
 ifeq ($(DEBUG),FALSE)
 	GXXFLAGS += -Os
