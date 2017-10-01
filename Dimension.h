@@ -48,7 +48,7 @@ private:
 	std::string _text;
 	Vector2f _pos;
 	OffsetDirection _dir;
-	Uint32 _color = DEFAULT_COLOR;
+	uint32_t _color = DEFAULT_COLOR;
 	Vector2u _drawPos;
 	Vector2u _size;
 };

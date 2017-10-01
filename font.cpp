@@ -18,7 +18,7 @@ Vector2u textSize(const string &s) {
 	return size;
 }
 
-void drawString(SDL_Surface* surface, const Vector2u &pos, const string &s, Uint32 color) {
+void drawString(SDL_Surface* surface, const Vector2u &pos, const string &s, uint32_t color) {
 	Vector2u drawPos = pos;
 	for (size_t i = 0; i < s.length(); i++) {
 		if (s[i] == '\n') {
@@ -31,7 +31,7 @@ void drawString(SDL_Surface* surface, const Vector2u &pos, const string &s, Uint
 	}
 }
 
-void drawStringRGB(SDL_Surface* surface, const Vector2u &pos, const string &s, Uint8 r, Uint8 g, Uint8 b) {
-	Uint32 color = (r << 24) + (g << 16) + (b << 8) + 0xFF;
+void drawStringRGB(SDL_Surface* surface, const Vector2u &pos, const string &s, uint8_t r, uint8_t g, uint8_t b) {
+	uint32_t color = (r << 24) + (g << 16) + (b << 8) + 0xFF;
 	drawString(surface, pos, s, color);
 }

@@ -88,17 +88,17 @@ void Triangle::update() {
 					sideCount++;
 				}
 				if (side[i] && !angle[i]) { //find angle given opposite side
+					double sum = 0;
+					for (int j = 0; j < 3; j++) {
+						sum += angle[j];
+					}
 					angle[i] = asin(side[i]/sineLaw)*TO_DEGS;
 					if (std::isnan(angle[i])) {
 						message("The given values are impossible");
 						return;
 					}
-					double sum = 0;
-					for (int j = 0; j < 3; j++) {
-						sum += angle[j];
-					}
 
-					if (2*angle[i] - sum > 0) { //ambiguous case
+					if (angle[i] - sum > 1.0) { //ambiguous case (determined using angle sum)
 						if (!ambiguous) { //first time here, try to solve other places first
 							ambiguous = angle[i];
 							cout << "Skipping ambiguious case angle[" << i << "]: " << angle[i] << " or " << 180 - angle[i] << endl;
@@ -119,7 +119,7 @@ void Triangle::update() {
 							for (int j = 0; j < 3; j++) {
 								if (side[j] == 0) { //this side is ambiguous
 									_ambiguous.sideIndex = j;
-									double oppositeAngle = 2*angle[i] - sum;
+									double oppositeAngle = angle[i] - sum;
 									cout << "Second alternate angle: " << oppositeAngle << endl;
 									_ambiguous.side = sin(oppositeAngle*TO_RADS)*sineLaw;
 									cout << "Alternate side[" << j << "]: " << _ambiguous.side << endl;
@@ -381,10 +381,37 @@ void Triangle::clickAt(const Vector2f &pos) { //select one dimension and deselec
 	}
 }
 
+void Triangle::_drawArc(SDL_Surface *window, const Vector2f &pos, double radius, double start, double angle, uint32_t color) const {
+	arcColor(window, pos.x, pos.y, radius, -start - angle, -start, color);
+}
+
 void Triangle::drawOn(SDL_Surface *window) const { //fast draw loop
-	aatrigonColor(window, _drawPos[2].x, _drawPos[2].y,
-	              _drawPos[1].x, _drawPos[1].y,
-	              _drawPos[0].x, _drawPos[0].y, SHAPE_COLOR);
+	if (STATE(AMBIGUOUS)) {
+		size_t thirdPoint = 3 - _ambiguous.sideIndex - _ambiguous.angleIndex;
+		//draw acute version that doesn't overlap
+		aalineColor(window,
+					_drawPos[_ambiguous.angleIndex].x, _drawPos[_ambiguous.angleIndex].y,
+					_drawPos[_ambiguous.sideIndex].x, _drawPos[_ambiguous.sideIndex].y, SHAPE_COLOR);
+		aalineColor(window,
+					_drawPos[_ambiguous.angleIndex].x, _drawPos[_ambiguous.angleIndex].y,
+					_ambiguous.pos.x, _ambiguous.pos.y, SHAPE_COLOR);
+		//draw obtuse alternative
+		aatrigonColor(window, _ambiguous.pos.x, _ambiguous.pos.y,
+		              _drawPos[thirdPoint].x, _drawPos[thirdPoint].y,
+		              _drawPos[_ambiguous.sideIndex].x, _drawPos[_ambiguous.sideIndex].y, AMBIG_COLOR);
+		//second try to bypass horizontal line bug
+		aatrigonColor(window, _drawPos[_ambiguous.sideIndex].x, _drawPos[_ambiguous.sideIndex].y,
+		              _drawPos[thirdPoint].x, _drawPos[thirdPoint].y,
+					  _ambiguous.pos.x, _ambiguous.pos.y, AMBIG_COLOR);
+
+		Vector2u textPt = Vector2u((WINDOW_WIDTH - 37*FONT_WIDTH)/2, 8);
+		drawString(window, textPt, "Use acute (a) or            solution?", SHAPE_COLOR);
+		drawString(window, textPt + Vector2u(17*FONT_WIDTH,0), "obtuse (o)", AMBIG_COLOR);
+	} else {
+		aatrigonColor(window, _drawPos[2].x, _drawPos[2].y,
+		              _drawPos[1].x, _drawPos[1].y,
+		              _drawPos[0].x, _drawPos[0].y, SHAPE_COLOR);
+	}
 	for (int i = 0; i < 3; i++) {
 		//angles negated so positive is CCW
 		arcColor(window, _drawPos[i].x, _drawPos[i].y, 15,
@@ -394,15 +421,7 @@ void Triangle::drawOn(SDL_Surface *window) const { //fast draw loop
 		_angles[i].drawOn(window);
 		_sides[i].drawOn(window);
 	}
-	if (STATE(AMBIGUOUS)) {
-		size_t thirdPoint = 3 - _ambiguous.sideIndex - _ambiguous.angleIndex;
-		aatrigonColor(window, _ambiguous.pos.x, _ambiguous.pos.y,
-		              _drawPos[thirdPoint].x, _drawPos[thirdPoint].y,
-		              _drawPos[_ambiguous.sideIndex].x, _drawPos[_ambiguous.sideIndex].y, AMBIG_COLOR);
-		Vector2u textPt = Vector2u((WINDOW_WIDTH - 37*FONT_WIDTH)/2, 8);
-		drawString(window, textPt, "Use acute (a) or            solution?", SHAPE_COLOR);
-		drawString(window, textPt + Vector2u(17*FONT_WIDTH,0), "obtuse (o)", AMBIG_COLOR);
-	} else if (STATE(MESSAGE))
+	if (STATE(MESSAGE))
 		_messageBox.drawOn(window);
 }
 

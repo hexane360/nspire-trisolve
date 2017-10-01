@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 static const int WINDOW_WIDTH = 320;
 static const int WINDOW_HEIGHT = 240;
@@ -16,8 +17,8 @@ static const int V_TEXT_OFFSET = 4;
 
 #define COLOR(r,g,b) (r << 24) | (g << 16) | (b << 8) | 255
 
-static const Uint32 DEFAULT_COLOR = COLOR(0, 153, 255);   //blue, for unset dimensions
-static const Uint32 SET_COLOR = COLOR(255, 51, 51);       //red, for set dimension
-static const Uint32 SELECTED_COLOR = COLOR(255, 255, 51); //yellow, for dimensions mid-entry
-static const Uint32 SHAPE_COLOR = COLOR(255, 255, 255);   //white, for everything else
-static const Uint32 AMBIG_COLOR = COLOR(255, 255, 51);    //yellow, for ambiguous triangle entry
+static const uint32_t DEFAULT_COLOR = COLOR(0, 153, 255);   //blue, for unset dimensions
+static const uint32_t SET_COLOR = COLOR(255, 51, 51);       //red, for set dimension
+static const uint32_t SELECTED_COLOR = COLOR(255, 255, 51); //yellow, for dimensions mid-entry
+static const uint32_t SHAPE_COLOR = COLOR(255, 255, 255);   //white, for everything else
+static const uint32_t AMBIG_COLOR = COLOR(255, 255, 51);    //yellow, for ambiguous triangle entry

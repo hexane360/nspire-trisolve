@@ -44,6 +44,7 @@ private:
 	Vector2f _drawPos[3];
 	double _drawAng[3];
 	Message _messageBox;
+	void _drawArc(SDL_Surface*, const Vector2f &center, double, double, double, uint32_t) const;
 
 	bool _checkConstraints(double side[3], double angle[3], int &sideCount, int &angleCount);
 	bool _lawOfCosines(double side[3], double angle[3], int &sideCount, int &angleCount);
